@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:notebook/model/database/note.dart';
+import 'package:notebook/core/database/app_database.dart';
+import 'package:notebook/model/note_group.dart';
 import 'package:notebook/utils/constants/app_colors.dart';
 import 'package:notebook/core/extensions/extensions.dart';
 import 'package:notebook/viewmodel/home/home_page_view_model.dart';
@@ -17,11 +18,13 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       body: SafeArea(child: vm.isLoading ? buildLoading() : buildUI(vm)),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push("/addNote"),
-        backgroundColor: AppColors.accent,
-        child: Icon(Icons.add, color: AppColors.text),
-      ),
+      floatingActionButton: vm.isLoading
+          ? null
+          : FloatingActionButton(
+              onPressed: () => context.push("/addNote"),
+              backgroundColor: AppColors.accent,
+              child: Icon(Icons.add, color: AppColors.text),
+            ),
     );
   }
 
@@ -56,25 +59,41 @@ class HomePage extends ConsumerWidget {
           // sizedbox
           5.h,
 
-          // today info 2
-          Text(
-            "Today's Notes",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppColors.text,
-              fontSize: SuffaSizes.xxLargeTextSize,
-            ),
-          ),
-
-          // sizedbox
-          10.h,
-
           // notes
           Expanded(
             child: ListView.builder(
-              itemCount: vm.notes.length,
+              itemCount: vm.noteGroups.length,
               itemBuilder: (context, index) {
-                return buildNoteItem(vm.notes[index]);
+                NoteGroup noteGroup = vm.noteGroups[index];
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // today info 2
+                    Text(
+                      noteGroup.title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.text,
+                        fontSize: SuffaSizes.xxLargeTextSize,
+                      ),
+                    ),
+
+                    // sizedbox
+                    10.h,
+
+                    ...noteGroup.notes.map((note) => buildNoteItem(note)),
+
+                    //
+                    10.h,
+
+                    if ((vm.noteGroups.length - 1) != index)
+                      Divider(color: AppColors.surface),
+
+                    // sizedbox
+                    if ((vm.noteGroups.length - 1) != index) 10.h,
+                  ],
+                );
               },
             ),
           ),
@@ -95,6 +114,7 @@ class HomePage extends ConsumerWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
+        border: getNoteBorder(note.date),
         borderRadius: BorderRadius.circular(16.0),
       ),
       child: Column(
@@ -129,17 +149,48 @@ class HomePage extends ConsumerWidget {
           // sizedbox
           5.h,
 
-          // hour
-          Text(
-            DateFormat('h:mm a').format(DateTime.now()),
-            textAlign: TextAlign.start,
-            maxLines: 2,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppColors.accent,
-              fontSize: SuffaSizes.mediumTextSize,
-              overflow: TextOverflow.ellipsis,
-            ),
+          // time & tags
+          Wrap(
+            children: [
+              // time
+              Text(
+                DateFormat('h:mm a').format(note.date),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.accent,
+                  fontSize: SuffaSizes.mediumTextSize,
+                ),
+              ),
+
+              // sizedbox
+              3.w,
+
+              // tags
+              ...note.tag
+                  .split('|')
+                  .where((t) => t.isNotEmpty)
+                  .map(
+                    (tag) => Container(
+                      margin: const EdgeInsets.only(left: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        tag,
+                        style: TextStyle(
+                          color: AppColors.secondaryText,
+                          fontSize: SuffaSizes.smallTextSize,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+            ],
           ),
         ],
       ),
@@ -167,5 +218,16 @@ class HomePage extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  Border getNoteBorder(DateTime noteDate) {
+    final now = DateTime.now();
+    final diff = noteDate.difference(now);
+
+    if (diff.isNegative) return Border.all(color: AppColors.accent, width: 1.5);
+    if (diff.inHours <= 3) {
+      return Border.all(color: AppColors.warning, width: 1.5);
+    }
+    return Border.all(color: Colors.transparent);
   }
 }

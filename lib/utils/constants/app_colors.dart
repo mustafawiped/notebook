@@ -15,4 +15,10 @@ class AppColors {
 
   // Ana metin rengi (#ebeae6)
   static const Color text = Color(0xFFEBEAE6);
+
+  // Süresi geçmiş not rengi — koyu kırmızımsı, accent ile uyumlu
+  static const Color overdue = Color(0xFF5C2A2A);
+
+  // 3 saat veya daha az kalan not rengi — sıcak amber yerine koyu hardal
+  static const Color warning = Color(0xFF4A3B1F);
 }

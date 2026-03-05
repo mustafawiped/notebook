@@ -4,24 +4,30 @@ import 'package:notebook/utils/constants/app_colors.dart';
 class TagPickerSheet extends StatefulWidget {
   final List<String> selectedTags;
   final Function(List<String>) onConfirm;
+  final int limit;
 
   const TagPickerSheet({
     super.key,
     required this.selectedTags,
     required this.onConfirm,
+    required this.limit,
   });
 
   static Future<void> show(
     BuildContext context, {
     required List<String> selectedTags,
     required Function(List<String>) onConfirm,
+    int? limit,
   }) {
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) =>
-          TagPickerSheet(selectedTags: selectedTags, onConfirm: onConfirm),
+      builder: (_) => TagPickerSheet(
+        selectedTags: selectedTags,
+        onConfirm: onConfirm,
+        limit: limit ?? 12,
+      ),
     );
   }
 
@@ -32,6 +38,7 @@ class TagPickerSheet extends StatefulWidget {
 class _TagPickerSheetState extends State<TagPickerSheet> {
   late List<String> _selected;
   final TextEditingController _newTagController = TextEditingController();
+  bool errState = false;
 
   final List<String> _tags = [
     'Personal',
@@ -64,18 +71,33 @@ class _TagPickerSheetState extends State<TagPickerSheet> {
 
   void _toggleTag(String tag) {
     setState(() {
-      _selected.contains(tag) ? _selected.remove(tag) : _selected.add(tag);
+      if (_selected.contains(tag)) {
+        _selected.remove(tag);
+        _tags.remove(tag);
+        errState = false;
+      } else {
+        _selected.add(tag);
+      }
     });
   }
 
   void _addNewTag() {
     final tag = _newTagController.text.trim();
     if (tag.isEmpty || _tags.contains(tag)) return;
+
+    if (errState) return;
+
     setState(() {
       _tags.add(tag);
       _selected.add(tag);
       _newTagController.clear();
     });
+
+    if (widget.limit <= _tags.length) {
+      setState(() {
+        errState = true;
+      });
+    }
   }
 
   @override
@@ -110,8 +132,8 @@ class _TagPickerSheetState extends State<TagPickerSheet> {
           const SizedBox(height: 20),
 
           // header text
-          const Text(
-            "Select Tags",
+          Text(
+            errState ? "You can no more create a tag" : "Select Tags",
             style: TextStyle(
               color: AppColors.text,
               fontSize: 20,
@@ -122,8 +144,10 @@ class _TagPickerSheetState extends State<TagPickerSheet> {
           const SizedBox(height: 4),
 
           // desc
-          const Text(
-            "Tags that have just been created are not permanent.",
+          Text(
+            errState
+                ? "Only ${widget.limit} tags are allowed."
+                : "Tags that have just been created are not permanent.",
             style: TextStyle(color: AppColors.secondaryText, fontSize: 13),
           ),
 
@@ -218,7 +242,7 @@ class _TagPickerSheetState extends State<TagPickerSheet> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.accent,
+                    color: errState ? AppColors.surface : AppColors.accent,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.add, color: Colors.white, size: 20),
@@ -229,7 +253,7 @@ class _TagPickerSheetState extends State<TagPickerSheet> {
 
           const SizedBox(height: 20),
 
-          // Confirm butonu
+          // confirm btn
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(

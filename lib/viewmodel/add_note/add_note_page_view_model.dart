@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notebook/core/database/app_database.dart';
@@ -13,7 +12,7 @@ class AddNotePageViewModel extends ChangeNotifier {
   TextEditingController titleController = TextEditingController();
   TextEditingController descController = TextEditingController();
   final Ref ref;
-  late DateTime compDate;
+  DateTime? compDate;
   List<String> selectedTags = [];
 
   AddNotePageViewModel(this.ref);
@@ -25,32 +24,60 @@ class AddNotePageViewModel extends ChangeNotifier {
     super.dispose();
   }
 
+  String? _validateNote() {
+    if (titleController.text.trim().length < 3) {
+      return "Title can be at least 3 characters long.";
+    }
+    if (compDate == null) {
+      return "Please select your preferred completion time.";
+    }
+    return null;
+  }
+
   Future<String> saveNote() async {
+    final error = _validateNote();
+    if (error != null) return error;
+
     try {
-      String title = titleController.text.trim(),
-          desc = descController.text.trim();
-
-      if (title.length < 3) return "Başlık en az 3 karakter olabilir.";
-
       final id = await ref
           .read(databaseProvider)
           .insertNote(
             NotesCompanion(
-              title: Value(title),
-              content: Value(desc),
-              tag: Value(""),
-              date: Value(DateTime.now()),
+              title: Value(titleController.text.trim()),
+              content: Value(descController.text.trim()),
+              tag: Value(selectedTags.join('|')),
+              date: Value(compDate!),
             ),
           );
-
       return id > 0
           ? "success"
-          : "Veri tabanına eklerken bir sorunla karşılaşıldı.";
+          : "An error occurred while adding to the database.";
     } catch (e) {
-      if (kDebugMode) {
-        print("AddNotePageView | saveNote | Try-Catch Error | Error: $e");
-      }
-      return "Bir şeyler ters gitti, not eklenemedi.";
+      return "Something went wrong, the note could not be saved.";
+    }
+  }
+
+  Future<String> draftNote() async {
+    final error = _validateNote();
+    if (error != null) return error;
+
+    try {
+      final id = await ref
+          .read(databaseProvider)
+          .insertDraft(
+            DraftsCompanion(
+              title: Value(titleController.text.trim()),
+              content: Value(descController.text.trim()),
+              tag: Value(selectedTags.join('|')),
+              date: Value(compDate!),
+              lastModified: Value(DateTime.now()),
+            ),
+          );
+      return id > 0
+          ? "success"
+          : "An error occurred while adding to the database.";
+    } catch (e) {
+      return "Something went wrong, the draft could not be saved.";
     }
   }
 }

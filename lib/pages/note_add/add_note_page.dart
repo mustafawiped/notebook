@@ -21,17 +21,38 @@ class AddNotePage extends ConsumerWidget {
         title: Text("New Note"),
         surfaceTintColor: Colors.transparent,
         actions: [
-          buildTopButton("Draft", AppColors.surface, Icons.drafts, () {}),
+          buildTopButton("Draft", AppColors.surface, Icons.drafts, () async {
+            // show loading
+            LoadingOverlay.show(context);
+
+            String response = await vm.draftNote();
+
+            // hide loading
+            LoadingOverlay.hide(context);
+
+            if (response == "success") {
+              ScreenMessage.showSuccessToast(
+                context,
+                "New draft successfully saved.",
+              );
+              context.pop();
+            } else {
+              ScreenMessage.showErrorToast(context, response);
+            }
+          }),
           buildTopButton("Save", AppColors.accent, Icons.save, () async {
             // show loading
             LoadingOverlay.show(context);
 
             String response = await vm.saveNote();
 
+            // hide loading
+            LoadingOverlay.hide(context);
+
             if (response == "success") {
               ScreenMessage.showSuccessToast(
                 context,
-                "Başarıyla yeni not eklendi.",
+                "New note successfully added.",
               );
               context.pop();
             } else {
@@ -86,6 +107,7 @@ class AddNotePage extends ConsumerWidget {
                 color: AppColors.text,
               ),
               maxLines: null,
+              maxLength: 600,
               decoration: InputDecoration(
                 hintText: "Description",
                 hintStyle: TextStyle(color: AppColors.secondaryText),
@@ -118,10 +140,7 @@ class AddNotePage extends ConsumerWidget {
                     context,
                     selectedTags: vm.selectedTags,
                     onConfirm: (tags) {
-                      print("len: ${vm.selectedTags.length}");
                       vm.selectedTags = tags;
-                      print("len - 2: ${vm.selectedTags.length}");
-                      print("haber - 2: ${tags.length}");
                     },
                   );
                 }),
@@ -186,7 +205,7 @@ class AddNotePage extends ConsumerWidget {
     Function() onClick,
   ) {
     return GestureDetector(
-      onTap: () => onClick,
+      onTap: () => onClick(),
       child: Container(
         padding: EdgeInsets.only(top: 10.0, bottom: 5.0, right: 5.0),
         child: Container(
