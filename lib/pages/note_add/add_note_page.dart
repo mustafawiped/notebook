@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:notebook/core/extensions/extensions.dart';
-import 'package:notebook/utils/components/date_picker.dart';
+import 'package:notebook/core/widgets/date_picker.dart';
+import 'package:notebook/core/widgets/tag_picker.dart';
 import 'package:notebook/utils/constants/app_colors.dart';
-import 'package:notebook/utils/helpers/loading.dart';
+import 'package:notebook/core/router/loading.dart';
 import 'package:notebook/viewmodel/add_note/add_note_page_view_model.dart';
 import 'package:suffadaemon/utils/utils.dart';
 
@@ -112,9 +113,19 @@ class AddNotePage extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                buildBottomOption("Add Tag", Icons.tag_sharp, () {}),
+                buildBottomOption("Add Tag", Icons.tag_sharp, () {
+                  TagPickerSheet.show(
+                    context,
+                    selectedTags: vm.selectedTags,
+                    onConfirm: (tags) {
+                      print("len: ${vm.selectedTags.length}");
+                      vm.selectedTags = tags;
+                      print("len - 2: ${vm.selectedTags.length}");
+                      print("haber - 2: ${tags.length}");
+                    },
+                  );
+                }),
                 buildBottomOption("Comp Date", Icons.timer, () {
-                  print("MURTAZA");
                   BottomDatePicker.show(
                     context,
                     initialDate: DateTime.now(),

@@ -14,6 +14,7 @@ class AddNotePageViewModel extends ChangeNotifier {
   TextEditingController descController = TextEditingController();
   final Ref ref;
   late DateTime compDate;
+  List<String> selectedTags = [];
 
   AddNotePageViewModel(this.ref);
 
