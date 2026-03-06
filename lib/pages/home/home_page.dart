@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:notebook/core/database/app_database.dart';
+import 'package:notebook/model/detail_page_args.dart';
 import 'package:notebook/model/note_group.dart';
 import 'package:notebook/utils/constants/app_colors.dart';
 import 'package:notebook/core/extensions/extensions.dart';
@@ -49,8 +50,41 @@ class HomePage extends ConsumerWidget {
           // sizedbox
           20.h,
 
-          // header text
-          buildHeaderText(),
+          // header & buttons text
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // header
+              buildHeaderText(),
+
+              // buttons
+              Row(
+                children: [
+                  Tooltip(
+                    message: "See your drafts",
+                    child: IconButton(
+                      onPressed: () async {
+                        final response = await context.push("/drafts");
+
+                        if (response == true) {
+                          vm.loadNotes();
+                          print("yenilendi bebisko");
+                        }
+                      },
+                      icon: Icon(Icons.drafts),
+                    ),
+                  ),
+                  Tooltip(
+                    message: "See your history",
+                    child: IconButton(
+                      onPressed: () {},
+                      icon: Icon(Icons.history_edu),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
 
           // sizedbox
           20.h,
@@ -67,55 +101,62 @@ class HomePage extends ConsumerWidget {
           // sizedbox
           5.h,
 
+          if (vm.noteGroups.isEmpty)
+            Center(child: Text("You haven't created any notes yet :)")),
+
           // notes
-          Expanded(
-            child: ListView.builder(
-              itemCount: vm.noteGroups.length,
-              itemBuilder: (context, index) {
-                NoteGroup noteGroup = vm.noteGroups[index];
+          if (vm.noteGroups.isNotEmpty)
+            Expanded(
+              child: ListView.builder(
+                itemCount: vm.noteGroups.length,
+                itemBuilder: (context, index) {
+                  NoteGroup noteGroup = vm.noteGroups[index];
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // today info 2
-                    Text(
-                      noteGroup.title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.text,
-                        fontSize: SuffaSizes.xxLargeTextSize,
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // today info 2
+                      Text(
+                        noteGroup.title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.text,
+                          fontSize: SuffaSizes.xxLargeTextSize,
+                        ),
                       ),
-                    ),
 
-                    // sizedbox
-                    10.h,
+                      // sizedbox
+                      10.h,
 
-                    ...noteGroup.notes.map(
-                      (note) => buildNoteItem(note, () async {
-                        final data = await context.push(
-                          "/noteDetail",
-                          extra: note,
-                        );
+                      ...noteGroup.notes.map(
+                        (note) => buildNoteItem(note, () async {
+                          final data = await context.push(
+                            "/noteDetail",
+                            extra: DetailArgs(
+                              mode: DetailMode.note,
+                              note: note,
+                            ),
+                          );
 
-                        if (data == true) {
-                          vm.loadNotes();
-                        }
-                      }),
-                    ),
+                          if (data == true) {
+                            vm.loadNotes();
+                          }
+                        }),
+                      ),
 
-                    //
-                    10.h,
+                      //
+                      10.h,
 
-                    if ((vm.noteGroups.length - 1) != index)
-                      Divider(color: AppColors.surface),
+                      if ((vm.noteGroups.length - 1) != index)
+                        Divider(color: AppColors.surface),
 
-                    // sizedbox
-                    if ((vm.noteGroups.length - 1) != index) 10.h,
-                  ],
-                );
-              },
+                      // sizedbox
+                      if ((vm.noteGroups.length - 1) != index) 10.h,
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
         ],
       ),
     );

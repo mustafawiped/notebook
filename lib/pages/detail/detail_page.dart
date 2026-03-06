@@ -3,21 +3,25 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:notebook/core/database/app_database.dart';
 import 'package:notebook/core/extensions/extensions.dart';
 import 'package:notebook/core/widgets/loading.dart';
+import 'package:notebook/model/detail_page_args.dart';
 import 'package:notebook/utils/constants/app_colors.dart';
-import 'package:notebook/viewmodel/note_detail/note_detail_page_view_model.dart';
+import 'package:notebook/viewmodel/detail/detail_page_view_model.dart';
 import 'package:suffadaemon/utils/helpers/toasts.dart';
 import 'package:suffadaemon/utils/popup/popup.dart';
 import 'package:suffadaemon/utils/resources/sizes.dart';
 
-class NoteDetailPage extends ConsumerWidget {
-  const NoteDetailPage({super.key, required this.note});
+class DetailPage extends ConsumerWidget {
+  const DetailPage({super.key, required this.args});
 
-  final Note note;
+  final DetailArgs args;
 
-  void deleteNote(BuildContext context, NoteDetailPageViewModel vm) {
+  void deleteData(
+    BuildContext context,
+    DetailPageViewModel vm,
+    DetailMode mode,
+  ) {
     SuffaPopup.showPopup(
       dialogBgColor: AppColors.background,
       cancelBtnColor: AppColors.surface,
@@ -38,7 +42,7 @@ class NoteDetailPage extends ConsumerWidget {
         LoadingOverlay.show(context);
 
         // db query
-        String response = await vm.deleteNote(note.id);
+        String response = await vm.deleteData(args);
 
         // hide loading
         LoadingOverlay.hide(context);
@@ -61,19 +65,61 @@ class NoteDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vm = ref.watch(noteDetailPageProvider);
+    final vm = ref.watch(detailPageProvider);
+
+    String title, desc, date, tags;
+
+    if (args.mode == DetailMode.note) {
+      title = args.note!.title;
+      desc = args.note!.content;
+      date = DateFormat('d MMMM yyyy - h:mm a').format(args.note!.date);
+      tags = args.note!.tag.replaceAll("|", " - ");
+    } else {
+      title = args.draft!.title;
+      desc = args.draft!.content;
+      date = DateFormat('d MMMM yyyy - h:mm a').format(args.draft!.date);
+      tags = args.draft!.tag.replaceAll("|", " - ");
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Note Detail"),
+        title: Text(args.mode == DetailMode.note ? "Note Detail" : "Draft"),
         surfaceTintColor: Colors.transparent,
         actions: [
           buildTopButton(
             "Delete",
             Colors.transparent,
             Icons.delete,
-            () => deleteNote(context, vm),
+            () => deleteData(context, vm, args.mode),
           ),
+
+          if (args.mode == DetailMode.draft)
+            buildTopButton(
+              "Add Notes",
+              Colors.transparent,
+              Icons.add,
+              () async {
+                // show loading
+                LoadingOverlay.show(context);
+
+                // db query
+                String response = await vm.addNotes(args);
+
+                // hide loading
+                LoadingOverlay.hide(context);
+
+                // control
+                if (response == "success" && context.mounted) {
+                  ScreenMessage.showSuccessToast(
+                    context,
+                    "notes from the drafts have been successfully added :)",
+                  );
+                  context.pop(true);
+                } else {
+                  ScreenMessage.showErrorToast(context, response);
+                }
+              },
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -85,7 +131,7 @@ class NoteDetailPage extends ConsumerWidget {
               // title
               buildItem(
                 "Title",
-                note.title,
+                title,
                 SuffaSizes.bigMediumTextSize,
                 SuffaSizes.xxLargeTextSize,
               ),
@@ -93,7 +139,7 @@ class NoteDetailPage extends ConsumerWidget {
               // desc
               buildItem(
                 "Description",
-                note.content,
+                desc,
                 SuffaSizes.bigMediumTextSize,
                 SuffaSizes.mediumTextSize,
               ),
@@ -101,16 +147,26 @@ class NoteDetailPage extends ConsumerWidget {
               // title
               buildItem(
                 "Expected Completion Date",
-                DateFormat('d MMMM yyyy - h:mm a').format(note.date),
+                date,
                 SuffaSizes.bigMediumTextSize,
                 SuffaSizes.mediumTextSize,
               ),
 
               // title
-              if (note.tag.isNotEmpty)
+              if (tags.isNotEmpty)
                 buildItem(
                   "Tags",
-                  note.tag.replaceAll("|", " - "),
+                  tags,
+                  SuffaSizes.bigMediumTextSize,
+                  SuffaSizes.mediumTextSize,
+                ),
+              // title
+              if (args.mode == DetailMode.draft)
+                buildItem(
+                  "Last transaction date",
+                  DateFormat(
+                    'd MMMM yyyy - h:mm a',
+                  ).format(args.draft!.lastModified),
                   SuffaSizes.bigMediumTextSize,
                   SuffaSizes.mediumTextSize,
                 ),

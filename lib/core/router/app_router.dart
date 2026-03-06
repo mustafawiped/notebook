@@ -2,10 +2,11 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:notebook/core/database/app_database.dart';
+import 'package:notebook/model/detail_page_args.dart';
+import 'package:notebook/pages/drafts/drafts_page.dart';
 import 'package:notebook/pages/home/home_page.dart';
 import 'package:notebook/pages/note_add/add_note_page.dart';
-import 'package:notebook/pages/note_detail/note_detail_page.dart';
+import 'package:notebook/pages/detail/detail_page.dart';
 import 'package:notebook/utils/constants/app_colors.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -14,27 +15,34 @@ final routerProvider = Provider<GoRouter>((ref) {
     errorBuilder: (context, state) => errorScreen(state, context),
     observers: [BotToastNavigatorObserver()],
     routes: [
-      // Home Page Route
+      // home route
       GoRoute(
         path: '/home',
         name: 'home',
         builder: (context, state) => const HomePage(),
       ),
 
-      // Add a new note Route
+      // add a new note route
       GoRoute(
         path: '/addNote',
         name: 'addNote',
         builder: (context, state) => const AddNotePage(),
       ),
 
-      // Note detail Route
+      // detail route
       GoRoute(
         path: '/noteDetail',
         name: 'noteDetail',
         builder: (context, state) {
-          return NoteDetailPage(note: state.extra as Note);
+          return DetailPage(args: state.extra as DetailArgs);
         },
+      ),
+
+      // draft route
+      GoRoute(
+        path: '/drafts',
+        name: 'drafts',
+        builder: (context, state) => DraftsPage(),
       ),
     ],
   );
