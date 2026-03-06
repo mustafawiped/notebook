@@ -17,11 +17,19 @@ class HomePage extends ConsumerWidget {
     final vm = ref.watch(homeViewModelProvider);
 
     return Scaffold(
-      body: SafeArea(child: vm.isLoading ? buildLoading() : buildUI(vm)),
+      body: SafeArea(
+        child: vm.isLoading ? buildLoading() : buildUI(context, vm),
+      ),
       floatingActionButton: vm.isLoading
           ? null
           : FloatingActionButton(
-              onPressed: () => context.push("/addNote"),
+              onPressed: () async {
+                final isAdded = await context.push<bool>("/addNote");
+
+                if (isAdded == true) {
+                  ref.read(homeViewModelProvider).loadNotes();
+                }
+              },
               backgroundColor: AppColors.accent,
               child: Icon(Icons.add, color: AppColors.text),
             ),
@@ -32,7 +40,7 @@ class HomePage extends ConsumerWidget {
     return Center(child: CircularProgressIndicator(color: AppColors.accent));
   }
 
-  Widget buildUI(HomePageViewModel vm) {
+  Widget buildUI(BuildContext context, HomePageViewModel vm) {
     return Padding(
       padding: const EdgeInsets.only(left: 20.0, right: 20.0),
       child: Column(
@@ -82,7 +90,18 @@ class HomePage extends ConsumerWidget {
                     // sizedbox
                     10.h,
 
-                    ...noteGroup.notes.map((note) => buildNoteItem(note)),
+                    ...noteGroup.notes.map(
+                      (note) => buildNoteItem(note, () async {
+                        final data = await context.push(
+                          "/noteDetail",
+                          extra: note,
+                        );
+
+                        if (data == true) {
+                          vm.loadNotes();
+                        }
+                      }),
+                    ),
 
                     //
                     10.h,
@@ -102,97 +121,100 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Container buildNoteItem(Note note) {
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.only(bottom: 10.0),
-      padding: EdgeInsets.only(
-        left: 16.0,
-        right: 16.0,
-        top: 10.0,
-        bottom: 10.0,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: getNoteBorder(note.date),
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // header
-          Text(
-            note.title,
-            textAlign: TextAlign.start,
-            maxLines: 1,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppColors.text,
-              fontSize: SuffaSizes.xxLargeTextSize,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          // description
-          Text(
-            note.content,
-            textAlign: TextAlign.start,
-            maxLines: 2,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppColors.secondaryText,
-              fontSize: SuffaSizes.xMediumTextSize,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          // sizedbox
-          5.h,
-
-          // time & tags
-          Wrap(
-            children: [
-              // time
-              Text(
-                DateFormat('h:mm a').format(note.date),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.accent,
-                  fontSize: SuffaSizes.mediumTextSize,
-                ),
+  Widget buildNoteItem(Note note, Function() onClick) {
+    return GestureDetector(
+      onTap: () => onClick(),
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.only(bottom: 10.0),
+        padding: EdgeInsets.only(
+          left: 16.0,
+          right: 16.0,
+          top: 10.0,
+          bottom: 10.0,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: getNoteBorder(note.date),
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // header
+            Text(
+              note.title,
+              textAlign: TextAlign.start,
+              maxLines: 1,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.text,
+                fontSize: SuffaSizes.xxLargeTextSize,
+                overflow: TextOverflow.ellipsis,
               ),
+            ),
 
-              // sizedbox
-              3.w,
+            // description
+            Text(
+              note.content,
+              textAlign: TextAlign.start,
+              maxLines: 2,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.secondaryText,
+                fontSize: SuffaSizes.xMediumTextSize,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
 
-              // tags
-              ...note.tag
-                  .split('|')
-                  .where((t) => t.isNotEmpty)
-                  .map(
-                    (tag) => Container(
-                      margin: const EdgeInsets.only(left: 6),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        tag,
-                        style: TextStyle(
-                          color: AppColors.secondaryText,
-                          fontSize: SuffaSizes.smallTextSize,
-                          fontWeight: FontWeight.w500,
+            // sizedbox
+            5.h,
+
+            // time & tags
+            Wrap(
+              children: [
+                // time
+                Text(
+                  DateFormat('h:mm a').format(note.date),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.accent,
+                    fontSize: SuffaSizes.mediumTextSize,
+                  ),
+                ),
+
+                // sizedbox
+                3.w,
+
+                // tags
+                ...note.tag
+                    .split('|')
+                    .where((t) => t.isNotEmpty)
+                    .map(
+                      (tag) => Container(
+                        margin: const EdgeInsets.only(left: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          tag,
+                          style: TextStyle(
+                            color: AppColors.secondaryText,
+                            fontSize: SuffaSizes.smallTextSize,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

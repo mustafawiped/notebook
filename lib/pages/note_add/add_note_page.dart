@@ -5,7 +5,7 @@ import 'package:notebook/core/extensions/extensions.dart';
 import 'package:notebook/core/widgets/date_picker.dart';
 import 'package:notebook/core/widgets/tag_picker.dart';
 import 'package:notebook/utils/constants/app_colors.dart';
-import 'package:notebook/core/router/loading.dart';
+import 'package:notebook/core/widgets/loading.dart';
 import 'package:notebook/viewmodel/add_note/add_note_page_view_model.dart';
 import 'package:suffadaemon/utils/utils.dart';
 
@@ -30,7 +30,7 @@ class AddNotePage extends ConsumerWidget {
             // hide loading
             LoadingOverlay.hide(context);
 
-            if (response == "success") {
+            if (response == "success" && context.mounted) {
               ScreenMessage.showSuccessToast(
                 context,
                 "New draft successfully saved.",
@@ -49,12 +49,12 @@ class AddNotePage extends ConsumerWidget {
             // hide loading
             LoadingOverlay.hide(context);
 
-            if (response == "success") {
+            if (response == "success" && context.mounted) {
               ScreenMessage.showSuccessToast(
                 context,
                 "New note successfully added.",
               );
-              context.pop();
+              context.pop(true);
             } else {
               ScreenMessage.showErrorToast(context, response);
             }
@@ -139,6 +139,7 @@ class AddNotePage extends ConsumerWidget {
                   TagPickerSheet.show(
                     context,
                     selectedTags: vm.selectedTags,
+                    tagMaxLength: 30,
                     onConfirm: (tags) {
                       vm.selectedTags = tags;
                     },

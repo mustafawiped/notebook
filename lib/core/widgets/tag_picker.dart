@@ -5,12 +5,14 @@ class TagPickerSheet extends StatefulWidget {
   final List<String> selectedTags;
   final Function(List<String>) onConfirm;
   final int limit;
+  final int tagMaxLength;
 
   const TagPickerSheet({
     super.key,
     required this.selectedTags,
     required this.onConfirm,
     required this.limit,
+    required this.tagMaxLength,
   });
 
   static Future<void> show(
@@ -18,6 +20,7 @@ class TagPickerSheet extends StatefulWidget {
     required List<String> selectedTags,
     required Function(List<String>) onConfirm,
     int? limit,
+    int? tagMaxLength,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -27,6 +30,7 @@ class TagPickerSheet extends StatefulWidget {
         selectedTags: selectedTags,
         onConfirm: onConfirm,
         limit: limit ?? 12,
+        tagMaxLength: tagMaxLength ?? 20,
       ),
     );
   }
@@ -215,6 +219,8 @@ class _TagPickerSheetState extends State<TagPickerSheet> {
               Expanded(
                 child: TextField(
                   controller: _newTagController,
+                  maxLength: widget.tagMaxLength,
+                  maxLines: 1,
                   style: const TextStyle(color: AppColors.text, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: "Create new tag...",
@@ -232,6 +238,7 @@ class _TagPickerSheetState extends State<TagPickerSheet> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
+                    counter: SizedBox.shrink(),
                   ),
                   onSubmitted: (_) => _addNewTag(),
                 ),
