@@ -4,56 +4,80 @@ import 'package:go_router/go_router.dart';
 import 'package:notebook/core/extensions/extensions.dart';
 import 'package:notebook/core/widgets/date_picker.dart';
 import 'package:notebook/core/widgets/tag_picker.dart';
+import 'package:notebook/model/detail_page_args.dart';
 import 'package:notebook/utils/constants/app_colors.dart';
 import 'package:notebook/core/widgets/loading.dart';
 import 'package:notebook/viewmodel/add_note/add_note_page_view_model.dart';
 import 'package:suffadaemon/utils/utils.dart';
 
 class AddNotePage extends ConsumerWidget {
-  const AddNotePage({super.key});
+  const AddNotePage({super.key, this.args});
+
+  final DetailArgs? args;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vm = ref.watch(addNoteViewModelProvider);
 
+    if (args != null) {
+      if (args!.mode == DetailMode.draft) {
+        vm.titleController.text = args!.draft!.title;
+        vm.descController.text = args!.draft!.content;
+        vm.compDate = args!.draft!.date;
+        vm.selectedTags = args!.draft!.tag
+            .split('|')
+            .where((t) => t.isNotEmpty)
+            .toList();
+      } else {
+        vm.titleController.text = args!.note!.title;
+        vm.descController.text = args!.note!.content;
+        vm.compDate = args!.note!.date;
+        vm.selectedTags = args!.note!.tag
+            .split('|')
+            .where((t) => t.isNotEmpty)
+            .toList();
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("New Note"),
+        title: Text(args != null ? "Edit" : "New Note"),
         surfaceTintColor: Colors.transparent,
         actions: [
-          buildTopButton("Draft", AppColors.surface, Icons.drafts, () async {
-            // show loading
-            LoadingOverlay.show(context);
+          if (args == null)
+            buildTopButton("Draft", AppColors.surface, Icons.drafts, () async {
+              // show loading
+              LoadingOverlay.show(context);
 
-            String response = await vm.draftNote();
+              String response = await vm.draftNote();
 
-            // hide loading
-            LoadingOverlay.hide(context);
+              // hide loading
+              LoadingOverlay.hide(context);
 
-            if (response == "success" && context.mounted) {
-              ScreenMessage.showSuccessToast(
-                context,
-                "New draft successfully saved.",
-              );
-              context.pop();
-            } else {
-              ScreenMessage.showErrorToast(context, response);
-            }
-          }),
+              if (response == "success" && context.mounted) {
+                ScreenMessage.showSuccessToast(
+                  context,
+                  "New draft successfully saved.",
+                );
+                context.pop();
+              } else {
+                ScreenMessage.showErrorToast(context, response);
+              }
+            }),
           buildTopButton("Save", AppColors.accent, Icons.save, () async {
             // show loading
             LoadingOverlay.show(context);
 
-            String response = await vm.saveNote();
+            String response = await vm.saveNote(args);
 
             // hide loading
             LoadingOverlay.hide(context);
 
             if (response == "success" && context.mounted) {
-              ScreenMessage.showSuccessToast(
-                context,
-                "New note successfully added.",
-              );
+              String msg = args == null
+                  ? "New note successfully added."
+                  : "successfully updated.";
+              ScreenMessage.showSuccessToast(context, msg);
               context.pop(true);
             } else {
               ScreenMessage.showErrorToast(context, response);
@@ -148,7 +172,7 @@ class AddNotePage extends ConsumerWidget {
                 buildBottomOption("Comp Date", Icons.timer, () {
                   BottomDatePicker.show(
                     context,
-                    initialDate: DateTime.now(),
+                    initialDate: vm.compDate ?? DateTime.now(),
                     onConfirm: (date) {
                       vm.compDate = date;
                     },

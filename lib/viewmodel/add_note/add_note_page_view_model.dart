@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notebook/core/database/app_database.dart';
+import 'package:notebook/model/detail_page_args.dart';
 
 final addNoteViewModelProvider =
     ChangeNotifierProvider.autoDispose<AddNotePageViewModel>(
@@ -34,21 +35,60 @@ class AddNotePageViewModel extends ChangeNotifier {
     return null;
   }
 
-  Future<String> saveNote() async {
+  Future<String> saveNote(DetailArgs? args) async {
     final error = _validateNote();
     if (error != null) return error;
 
     try {
-      final id = await ref
-          .read(databaseProvider)
-          .insertNote(
-            NotesCompanion(
-              title: Value(titleController.text.trim()),
-              content: Value(descController.text.trim()),
-              tag: Value(selectedTags.join('|')),
-              date: Value(compDate!),
-            ),
-          );
+      String title = titleController.text.trim(),
+          content = descController.text.trim(),
+          tag = selectedTags.join('|');
+      DateTime date = compDate!;
+
+      int id = 0;
+
+      if (args != null) {
+        if (args.mode == DetailMode.draft) {
+          bool state = await ref
+              .read(databaseProvider)
+              .updateDraft(
+                DraftsCompanion(
+                  id: Value(args.draft!.id),
+                  title: Value(title),
+                  content: Value(content),
+                  tag: Value(tag),
+                  date: Value(date),
+                  lastModified: Value(DateTime.now()),
+                ),
+              );
+          id = state ? 1 : 0;
+        } else {
+          bool state = await ref
+              .read(databaseProvider)
+              .updateNote(
+                NotesCompanion(
+                  id: Value(args.note!.id),
+                  title: Value(title),
+                  content: Value(content),
+                  tag: Value(tag),
+                  date: Value(date),
+                ),
+              );
+          id = state ? 1 : 0;
+        }
+      } else {
+        id = await ref
+            .read(databaseProvider)
+            .insertNote(
+              NotesCompanion(
+                title: Value(title),
+                content: Value(content),
+                tag: Value(tag),
+                date: Value(date),
+              ),
+            );
+      }
+
       return id > 0
           ? "success"
           : "An error occurred while adding to the database.";

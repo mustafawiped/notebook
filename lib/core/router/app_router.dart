@@ -26,7 +26,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/addNote',
         name: 'addNote',
-        builder: (context, state) => const AddNotePage(),
+        builder: (context, state) {
+          if (state.extra is DetailArgs) {
+            return AddNotePage(args: state.extra as DetailArgs);
+          } else {
+            return const AddNotePage();
+          }
+        },
       ),
 
       // detail route

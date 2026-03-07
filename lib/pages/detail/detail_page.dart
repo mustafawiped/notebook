@@ -17,52 +17,6 @@ class DetailPage extends ConsumerWidget {
 
   final DetailArgs args;
 
-  void deleteData(
-    BuildContext context,
-    DetailPageViewModel vm,
-    DetailMode mode,
-  ) {
-    SuffaPopup.showPopup(
-      dialogBgColor: AppColors.background,
-      cancelBtnColor: AppColors.surface,
-      okBtnColor: AppColors.accent,
-      titleTextStyle: TextStyle(
-        color: AppColors.text,
-        fontWeight: FontWeight.bold,
-        fontSize: SuffaSizes.bigMediumTextSize,
-      ),
-      descTextStyle: TextStyle(color: AppColors.secondaryText),
-      context,
-      "Are you sure you want to delete it?",
-      "Are you sure you want to delete the note? If you delete it, you can restore it from the history section at any time.",
-      "Delete",
-      PopupType.warning,
-      () async {
-        // show loading
-        LoadingOverlay.show(context);
-
-        // db query
-        String response = await vm.deleteData(args);
-
-        // hide loading
-        LoadingOverlay.hide(context);
-
-        // control
-        if (response == "success" && context.mounted) {
-          ScreenMessage.showSuccessToast(
-            context,
-            "Note was successfully deleted.",
-          );
-          context.pop(true);
-        } else {
-          ScreenMessage.showErrorToast(context, response);
-        }
-      },
-      declineBtnText: "Forget it",
-      declineBtnFnc: () {},
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vm = ref.watch(detailPageProvider);
@@ -86,6 +40,13 @@ class DetailPage extends ConsumerWidget {
         title: Text(args.mode == DetailMode.note ? "Note Detail" : "Draft"),
         surfaceTintColor: Colors.transparent,
         actions: [
+          buildTopButton("Edit", Colors.transparent, Icons.edit, () async {
+            final status = await context.push("/addNote", extra: args);
+            if (status == true) {
+              context.pop(true);
+            }
+          }),
+
           buildTopButton(
             "Delete",
             Colors.transparent,
@@ -98,27 +59,7 @@ class DetailPage extends ConsumerWidget {
               "Add Notes",
               Colors.transparent,
               Icons.add,
-              () async {
-                // show loading
-                LoadingOverlay.show(context);
-
-                // db query
-                String response = await vm.addNotes(args);
-
-                // hide loading
-                LoadingOverlay.hide(context);
-
-                // control
-                if (response == "success" && context.mounted) {
-                  ScreenMessage.showSuccessToast(
-                    context,
-                    "notes from the drafts have been successfully added :)",
-                  );
-                  context.pop(true);
-                } else {
-                  ScreenMessage.showErrorToast(context, response);
-                }
-              },
+              () => addNotes(context, vm, args.mode),
             ),
         ],
       ),
@@ -262,6 +203,94 @@ class DetailPage extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void deleteData(
+    BuildContext context,
+    DetailPageViewModel vm,
+    DetailMode mode,
+  ) {
+    SuffaPopup.showPopup(
+      dialogBgColor: AppColors.background,
+      cancelBtnColor: AppColors.surface,
+      okBtnColor: AppColors.accent,
+      titleTextStyle: TextStyle(
+        color: AppColors.text,
+        fontWeight: FontWeight.bold,
+        fontSize: SuffaSizes.bigMediumTextSize,
+      ),
+      descTextStyle: TextStyle(color: AppColors.secondaryText),
+      context,
+      "Are you sure you want to delete it?",
+      "Are you sure you want to delete this? If you delete it, you can restore it from the history section at any time.",
+      "Delete",
+      PopupType.warning,
+      () async {
+        // show loading
+        LoadingOverlay.show(context);
+
+        // db query
+        String response = await vm.deleteData(args);
+
+        // hide loading
+        LoadingOverlay.hide(context);
+
+        // control
+        if (response == "success" && context.mounted) {
+          ScreenMessage.showSuccessToast(
+            context,
+            "Note was successfully deleted.",
+          );
+          context.pop(true);
+        } else {
+          ScreenMessage.showErrorToast(context, response);
+        }
+      },
+      declineBtnText: "Forget it",
+      declineBtnFnc: () {},
+    );
+  }
+
+  void addNotes(BuildContext context, DetailPageViewModel vm, DetailMode mode) {
+    SuffaPopup.showPopup(
+      dialogBgColor: AppColors.background,
+      cancelBtnColor: AppColors.surface,
+      okBtnColor: AppColors.accent,
+      titleTextStyle: TextStyle(
+        color: AppColors.text,
+        fontWeight: FontWeight.bold,
+        fontSize: SuffaSizes.bigMediumTextSize,
+      ),
+      descTextStyle: TextStyle(color: AppColors.secondaryText),
+      context,
+      "Are you sure you want to add this draft to your notes?",
+      "You know that the draft will be deleted when it is added to your notes, right?",
+      "Add",
+      PopupType.question,
+      () async {
+        // show loading
+        LoadingOverlay.show(context);
+
+        // db query
+        String response = await vm.addNotes(args);
+
+        // hide loading
+        LoadingOverlay.hide(context);
+
+        // control
+        if (response == "success" && context.mounted) {
+          ScreenMessage.showSuccessToast(
+            context,
+            "notes from the drafts have been successfully added :)",
+          );
+          context.pop(true);
+        } else {
+          ScreenMessage.showErrorToast(context, response);
+        }
+      },
+      declineBtnText: "wait",
+      declineBtnFnc: () {},
     );
   }
 }

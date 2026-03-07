@@ -68,7 +68,6 @@ class HomePage extends ConsumerWidget {
 
                         if (response == true) {
                           vm.loadNotes();
-                          print("yenilendi bebisko");
                         }
                       },
                       icon: Icon(Icons.drafts),
@@ -102,7 +101,12 @@ class HomePage extends ConsumerWidget {
           5.h,
 
           if (vm.noteGroups.isEmpty)
-            Center(child: Text("You haven't created any notes yet :)")),
+            Padding(
+              padding: EdgeInsetsGeometry.only(top: 40),
+              child: Center(
+                child: Text("You haven't created any notes yet :)"),
+              ),
+            ),
 
           // notes
           if (vm.noteGroups.isNotEmpty)
