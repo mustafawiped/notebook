@@ -24,22 +24,22 @@ class Drafts extends Table {
   DateTimeColumn get lastModified => dateTime()();
 }
 
-class Histories extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get noteId => integer()();
-  TextColumn get title => text()();
-  TextColumn get content => text()();
-  TextColumn get tag => text()();
-  DateTimeColumn get date => dateTime()();
-  DateTimeColumn get deletedAt => dateTime()();
-}
-
-@DriftDatabase(tables: [Notes, Drafts, Histories])
+@DriftDatabase(tables: [Notes, Drafts])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'notebook_db'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  // @override
+  // MigrationStrategy get migration => MigrationStrategy(
+  //   onUpgrade: (m, from, to) async {
+  //     if (from == 1) {
+  //       // ignore: deprecated_member_use
+  //       await customStatement('DROP TABLE IF EXISTS histories');
+  //     }
+  //   },
+  // );
 
   // -------- NOTES --------
   Future<List<Note>> getNotes() => select(notes).get();
@@ -55,11 +55,4 @@ class AppDatabase extends _$AppDatabase {
       update(drafts).replace(draft);
   Future<int> deleteDraft(int id) =>
       (delete(drafts)..where((t) => t.id.equals(id))).go();
-
-  // -------- HISTORIES --------
-  Future<List<History>> getHistories() => select(histories).get();
-  Future<int> insertHistory(HistoriesCompanion history) =>
-      into(histories).insert(history);
-  Future<int> deleteHistory(int id) =>
-      (delete(histories)..where((t) => t.id.equals(id))).go();
 }

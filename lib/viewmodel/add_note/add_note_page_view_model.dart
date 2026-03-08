@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notebook/core/database/app_database.dart';
+import 'package:notebook/core/services/notification_service.dart';
 import 'package:notebook/model/detail_page_args.dart';
 
 final addNoteViewModelProvider =
@@ -87,6 +88,11 @@ class AddNotePageViewModel extends ChangeNotifier {
                 date: Value(date),
               ),
             );
+        await NotificationService.scheduleNoteNotifications(
+          noteId: id,
+          title: title,
+          date: date,
+        );
       }
 
       return id > 0

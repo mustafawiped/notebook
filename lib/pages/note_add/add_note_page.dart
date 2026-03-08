@@ -10,29 +10,43 @@ import 'package:notebook/core/widgets/loading.dart';
 import 'package:notebook/viewmodel/add_note/add_note_page_view_model.dart';
 import 'package:suffadaemon/utils/utils.dart';
 
-class AddNotePage extends ConsumerWidget {
+class AddNotePage extends ConsumerStatefulWidget {
+  final DetailArgs? args;
   const AddNotePage({super.key, this.args});
 
-  final DetailArgs? args;
+  @override
+  ConsumerState<AddNotePage> createState() => _AddNotePageState();
+}
+
+class _AddNotePageState extends ConsumerState<AddNotePage> {
+  FocusNode textFocusNode = FocusNode();
+  FocusNode descFocusNode = FocusNode();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    textFocusNode.dispose();
+    descFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final vm = ref.watch(addNoteViewModelProvider);
 
-    if (args != null) {
-      if (args!.mode == DetailMode.draft) {
-        vm.titleController.text = args!.draft!.title;
-        vm.descController.text = args!.draft!.content;
-        vm.compDate = args!.draft!.date;
-        vm.selectedTags = args!.draft!.tag
+    if (widget.args != null) {
+      if (widget.args!.mode == DetailMode.draft) {
+        vm.titleController.text = widget.args!.draft!.title;
+        vm.descController.text = widget.args!.draft!.content;
+        vm.compDate = widget.args!.draft!.date;
+        vm.selectedTags = widget.args!.draft!.tag
             .split('|')
             .where((t) => t.isNotEmpty)
             .toList();
       } else {
-        vm.titleController.text = args!.note!.title;
-        vm.descController.text = args!.note!.content;
-        vm.compDate = args!.note!.date;
-        vm.selectedTags = args!.note!.tag
+        vm.titleController.text = widget.args!.note!.title;
+        vm.descController.text = widget.args!.note!.content;
+        vm.compDate = widget.args!.note!.date;
+        vm.selectedTags = widget.args!.note!.tag
             .split('|')
             .where((t) => t.isNotEmpty)
             .toList();
@@ -41,10 +55,10 @@ class AddNotePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(args != null ? "Edit" : "New Note"),
+        title: Text(widget.args != null ? "Edit" : "New Note"),
         surfaceTintColor: Colors.transparent,
         actions: [
-          if (args == null)
+          if (widget.args == null)
             buildTopButton("Draft", AppColors.surface, Icons.drafts, () async {
               // show loading
               LoadingOverlay.show(context);
@@ -68,13 +82,13 @@ class AddNotePage extends ConsumerWidget {
             // show loading
             LoadingOverlay.show(context);
 
-            String response = await vm.saveNote(args);
+            String response = await vm.saveNote(widget.args);
 
             // hide loading
             LoadingOverlay.hide(context);
 
             if (response == "success" && context.mounted) {
-              String msg = args == null
+              String msg = widget.args == null
                   ? "New note successfully added."
                   : "successfully updated.";
               ScreenMessage.showSuccessToast(context, msg);
@@ -104,6 +118,7 @@ class AddNotePage extends ConsumerWidget {
               controller: vm.titleController,
               maxLines: 1,
               maxLength: 45,
+              focusNode: textFocusNode,
               style: TextStyle(
                 fontSize: SuffaSizes.largeTextSize,
                 fontWeight: FontWeight.bold,
@@ -132,6 +147,7 @@ class AddNotePage extends ConsumerWidget {
               ),
               maxLines: null,
               maxLength: 600,
+              focusNode: descFocusNode,
               decoration: InputDecoration(
                 hintText: "Description",
                 hintStyle: TextStyle(color: AppColors.secondaryText),
@@ -160,6 +176,8 @@ class AddNotePage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 buildBottomOption("Add Tag", Icons.tag_sharp, () {
+                  textFocusNode.unfocus();
+                  descFocusNode.unfocus();
                   TagPickerSheet.show(
                     context,
                     selectedTags: vm.selectedTags,
@@ -170,6 +188,8 @@ class AddNotePage extends ConsumerWidget {
                   );
                 }),
                 buildBottomOption("Comp Date", Icons.timer, () {
+                  textFocusNode.unfocus();
+                  descFocusNode.unfocus();
                   BottomDatePicker.show(
                     context,
                     initialDate: vm.compDate ?? DateTime.now(),

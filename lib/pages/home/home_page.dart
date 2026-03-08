@@ -58,29 +58,18 @@ class HomePage extends ConsumerWidget {
               buildHeaderText(),
 
               // buttons
-              Row(
-                children: [
-                  Tooltip(
-                    message: "See your drafts",
-                    child: IconButton(
-                      onPressed: () async {
-                        final response = await context.push("/drafts");
+              Tooltip(
+                message: "See your drafts",
+                child: IconButton(
+                  onPressed: () async {
+                    final response = await context.push("/drafts");
 
-                        if (response == true) {
-                          vm.loadNotes();
-                        }
-                      },
-                      icon: Icon(Icons.drafts),
-                    ),
-                  ),
-                  Tooltip(
-                    message: "See your history",
-                    child: IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.history_edu),
-                    ),
-                  ),
-                ],
+                    if (response == true) {
+                      vm.loadNotes();
+                    }
+                  },
+                  icon: Icon(Icons.drafts),
+                ),
               ),
             ],
           ),

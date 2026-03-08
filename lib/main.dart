@@ -2,10 +2,12 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notebook/core/router/app_router.dart';
+import 'package:notebook/core/services/notification_service.dart';
 import 'package:notebook/utils/constants/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.init();
   runApp(ProviderScope(child: const MyApp()));
 }
 

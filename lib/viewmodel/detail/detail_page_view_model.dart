@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notebook/core/database/app_database.dart';
+import 'package:notebook/core/services/notification_service.dart';
 import 'package:notebook/model/detail_page_args.dart';
 
 final detailPageProvider =
@@ -19,6 +20,9 @@ class DetailPageViewModel extends ChangeNotifier {
       int response;
       if (args.mode == DetailMode.note) {
         response = await ref.read(databaseProvider).deleteNote(args.note!.id);
+        if (response > 0) {
+          await NotificationService.cancelNoteNotifications(args.note!.id);
+        }
       } else {
         response = await ref.read(databaseProvider).deleteDraft(args.draft!.id);
       }
