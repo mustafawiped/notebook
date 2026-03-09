@@ -31,16 +31,6 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 2;
 
-  // @override
-  // MigrationStrategy get migration => MigrationStrategy(
-  //   onUpgrade: (m, from, to) async {
-  //     if (from == 1) {
-  //       // ignore: deprecated_member_use
-  //       await customStatement('DROP TABLE IF EXISTS histories');
-  //     }
-  //   },
-  // );
-
   // -------- NOTES --------
   Future<List<Note>> getNotes() => select(notes).get();
   Future<int> insertNote(NotesCompanion note) => into(notes).insert(note);

@@ -91,26 +91,3 @@ Widget errorScreen(GoRouterState state, BuildContext context) {
     ),
   );
 }
-
-      //  GoRoute(
-      //   path: '/detail/:id',                   -- parametreli route
-      //   name: 'detail',
-      //   builder: (context, state) {
-      //     final id = state.pathParameters['id']!;
-      //     return DetailPage(id: id);
-      //   },
-      // ),
-
-      /*
-        // Gönderirken
-        context.push('/detail', extra: myNote);
-
-        // Route tanımı
-        GoRoute(
-          path: '/detail',
-          builder: (context, state) {
-            final note = state.extra as Note;
-            return DetailPage(note: note);
-          },
-        )
-      */

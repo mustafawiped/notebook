@@ -11,7 +11,6 @@ class NotificationService {
     tz.initializeTimeZones();
     final timeZone = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(timeZone.identifier));
-    print("Timezone: ${timeZone.identifier}"); // ne yazıyor bak
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings(
@@ -77,8 +76,6 @@ class NotificationService {
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
-      print("Şu an: ${tz.TZDateTime.now(tz.local)}");
-      print("Planlanacak: ${tz.TZDateTime.from(scheduledDate, tz.local)}");
     }
   }
 

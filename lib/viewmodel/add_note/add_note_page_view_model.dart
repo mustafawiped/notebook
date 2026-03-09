@@ -105,7 +105,6 @@ class AddNotePageViewModel extends ChangeNotifier {
           ? "success"
           : "An error occurred while adding to the database.";
     } catch (e) {
-      print("err: $e");
       return "Something went wrong, the note could not be saved.";
     }
   }

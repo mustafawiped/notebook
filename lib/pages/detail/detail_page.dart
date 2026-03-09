@@ -85,7 +85,7 @@ class DetailPage extends ConsumerWidget {
                 SuffaSizes.mediumTextSize,
               ),
 
-              // title
+              // exp comp date
               buildItem(
                 "Expected Completion Date",
                 date,
@@ -93,7 +93,7 @@ class DetailPage extends ConsumerWidget {
                 SuffaSizes.mediumTextSize,
               ),
 
-              // title
+              // tags
               if (tags.isNotEmpty)
                 buildItem(
                   "Tags",
@@ -101,7 +101,7 @@ class DetailPage extends ConsumerWidget {
                   SuffaSizes.bigMediumTextSize,
                   SuffaSizes.mediumTextSize,
                 ),
-              // title
+              // last trans. date
               if (args.mode == DetailMode.draft)
                 buildItem(
                   "Last transaction date",
