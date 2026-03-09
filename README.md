@@ -43,8 +43,9 @@ lib/
 │   ├── database/        # Drift database setup & DAOs
 │   ├── extensions/      # Dart extensions
 │   ├── router/          # GoRouter configuration
+│   ├── services/        # Notification service
 │   └── widgets/         # Shared widgets (LoadingOverlay, etc.)
-├── model/               # Data models (Note, Draft, History)
+├── model/               # Data models (Note, Draft)
 ├── pages/               # UI screens
 ├── utils/
 │   └── constants/       # App colors, sizes
@@ -62,14 +63,15 @@ lib/
 
 ## 🛠 Tech Stack
 
-| Technology                                     | Purpose                 |
-| ---------------------------------------------- | ----------------------- |
-| [Flutter](https://flutter.dev)                 | UI framework            |
-| [Riverpod](https://riverpod.dev)               | State management        |
-| [Drift](https://drift.simonbinder.eu)          | Local database (SQLite) |
-| [GoRouter](https://pub.dev/packages/go_router) | Navigation              |
-| [intl](https://pub.dev/packages/intl)          | Date & time formatting  |
-| [BotToast](https://pub.dev/packages/bot_toast) | Toast notifications     |
+| Technology                                                                          | Purpose                 |
+| ----------------------------------------------------------------------------------- | ----------------------- |
+| [Flutter](https://flutter.dev)                                                      | UI framework            |
+| [Riverpod](https://riverpod.dev)                                                    | State management        |
+| [Drift](https://drift.simonbinder.eu)                                               | Local database (SQLite) |
+| [GoRouter](https://pub.dev/packages/go_router)                                      | Navigation              |
+| [intl](https://pub.dev/packages/intl)                                               | Date & time formatting  |
+| [BotToast](https://pub.dev/packages/bot_toast)                                      | Toast notifications     |
+| [flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications) | Push notifications      |
 
 ---
 
