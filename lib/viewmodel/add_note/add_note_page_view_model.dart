@@ -64,6 +64,7 @@ class AddNotePageViewModel extends ChangeNotifier {
               );
           id = state ? 1 : 0;
         } else {
+          await NotificationService.cancelNoteNotifications(args.note!.id);
           bool state = await ref
               .read(databaseProvider)
               .updateNote(
@@ -76,6 +77,11 @@ class AddNotePageViewModel extends ChangeNotifier {
                 ),
               );
           id = state ? 1 : 0;
+          await NotificationService.scheduleNoteNotifications(
+            noteId: id,
+            title: title,
+            date: date,
+          );
         }
       } else {
         id = await ref
@@ -99,6 +105,7 @@ class AddNotePageViewModel extends ChangeNotifier {
           ? "success"
           : "An error occurred while adding to the database.";
     } catch (e) {
+      print("err: $e");
       return "Something went wrong, the note could not be saved.";
     }
   }

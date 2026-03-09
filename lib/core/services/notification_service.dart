@@ -11,9 +11,15 @@ class NotificationService {
     tz.initializeTimeZones();
     final timeZone = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(timeZone.identifier));
+    print("Timezone: ${timeZone.identifier}"); // ne yazıyor bak
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const settings = InitializationSettings(android: android);
+    const ios = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+    const settings = InitializationSettings(android: android, iOS: ios);
     await _plugin.initialize(settings);
     await _plugin
         .resolvePlatformSpecificImplementation<
@@ -59,12 +65,20 @@ class NotificationService {
         noteId * 10 + i,
         'Notebook',
         messages[i],
-        tz.TZDateTime.from(scheduledDate, tz.local),
+        tz.TZDateTime.local(
+          scheduledDate.year,
+          scheduledDate.month,
+          scheduledDate.day,
+          scheduledDate.hour,
+          scheduledDate.minute,
+        ),
         _details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
+      print("Şu an: ${tz.TZDateTime.now(tz.local)}");
+      print("Planlanacak: ${tz.TZDateTime.from(scheduledDate, tz.local)}");
     }
   }
 

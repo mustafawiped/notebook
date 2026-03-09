@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:notebook/core/database/app_database.dart';
+import 'package:notebook/core/services/app_version_service.dart';
 import 'package:notebook/model/note_group.dart';
 
 final homeViewModelProvider = ChangeNotifierProvider<HomePageViewModel>((ref) {
@@ -13,6 +14,7 @@ class HomePageViewModel extends ChangeNotifier {
   final Ref ref;
 
   String todayDate = "";
+  String appVersion = "?";
 
   bool _isLoading = true;
   bool get isLoading => _isLoading;
@@ -23,8 +25,14 @@ class HomePageViewModel extends ChangeNotifier {
   HomePageViewModel(this.ref) {
     todayDate = DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
 
+    setAppVersion();
+
     loadNotes();
     notifyListeners();
+  }
+
+  Future<void> setAppVersion() async {
+    appVersion = await AppVersionService.getAppVersion();
   }
 
   Future<void> loadNotes() async {

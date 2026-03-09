@@ -8,6 +8,7 @@ import 'package:notebook/model/note_group.dart';
 import 'package:notebook/utils/constants/app_colors.dart';
 import 'package:notebook/core/extensions/extensions.dart';
 import 'package:notebook/viewmodel/home/home_page_view_model.dart';
+import 'package:suffadaemon/components/texts/title_text.dart';
 import 'package:suffadaemon/utils/utils.dart';
 
 class HomePage extends ConsumerWidget {
@@ -34,6 +35,20 @@ class HomePage extends ConsumerWidget {
               backgroundColor: AppColors.accent,
               child: Icon(Icons.add, color: AppColors.text),
             ),
+      bottomNavigationBar: SizedBox(
+        height: MediaQuery.of(context).viewInsets.bottom + 36,
+        child: Align(
+          alignment: AlignmentGeometry.topCenter,
+          child: SuffaText(
+            title: "app version: ${vm.appVersion}",
+            textFont: TextStyle(
+              fontSize: SuffaSizes.smallTextSize,
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
